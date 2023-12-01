@@ -8,12 +8,13 @@ const ProductManagement = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [updatedCategoryName, setUpdatedCategoryName] = useState('');
-  const [cart, setCart] = useState([]);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [transactions, setTransactions] = useState([]);
+  const [lastProductId, setLastProductId] = useState(0);
+  const [lastCategoryId, setLastCategoryId] = useState(0);
+  
 
   const addProduct = (product) => {
-    setProducts([...products, { ...product, id: uuidv4() }]);
+    setProducts([...products, { ...product, id: lastProductId + 1 }]);
+    setLastProductId(lastProductId + 1);
   };
 
   const handleSubmit = (e) => {
@@ -28,7 +29,6 @@ const ProductManagement = () => {
     // Reset the form
     e.target.reset();
   };
-
   const updateProduct = (productId, updatedProduct) => {
     setProducts(
       products.map((product) =>
@@ -48,10 +48,10 @@ const ProductManagement = () => {
   };
 
   const addCategory = (categoryName) => {
-    setCategories([...categories, { name: categoryName, id: uuidv4() }]);
-    
-  
+    setCategories([...categories, { name: categoryName, id: lastCategoryId + 1 }]);
+    setLastCategoryId(lastCategoryId + 1);
   };
+
 
   const handleProductSubmit = (e) => {
     e.preventDefault();
@@ -71,8 +71,7 @@ const ProductManagement = () => {
     const categoryName = e.target.categoryName.value;
     addCategory(categoryName);
 
-    
-  e.target.reset();
+    e.target.reset();
   };
 
   const startEditingCategory = (categoryId) => {
@@ -105,29 +104,7 @@ const ProductManagement = () => {
     setUpdatedCategoryName('');
   };
 
-  const addToCart = (product) => {
-    if (product.stock > 0) {
-      setCart([...cart, product]);
-      updateProduct(product.id, { ...product, stock: product.stock - 1 });
-    }
-  };
 
-  const calculateTotalAmount = () => {
-    const total = cart.reduce((acc, product) => acc + parseFloat(product.price), 0);
-    setTotalAmount(total);
-  };
-
-  const completeTransaction = () => {
-    setTransactions([...transactions, ...cart]);
-    setCart([]);
-    setTotalAmount(0);
-  };
-
-  // New function to sort transactions by count
-  const sortTransactionsByCount = () => {
-    const sortedTransactions = transactions.slice().sort((a, b) => b.stock - a.stock);
-    setTransactions(sortedTransactions);
-  };
 
   return (
     <div>
@@ -171,97 +148,6 @@ const ProductManagement = () => {
         />
         <button type="submit">Add Category</button>
       </form>
-
-      {editingProduct && (
-        <Product
-          product={products.find((product) => product.id === editingProduct)}
-          categories={categories}
-          onSubmit={(updatedProduct) =>
-            updateProduct(editingProduct, updatedProduct)
-          }
-        />
-      )}
-
-{/*Report Table */}
-      <div>
-        <h2>Transaction Report</h2>
-        <button onClick={sortTransactionsByCount}>Sort by Transaction Count</button>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Category</th>
-              
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((transaction) => (
-              <tr key={transaction.id}>
-                <td>{transaction.name}</td>
-                <td>{transaction.price}</td>
-                <td>{transaction.stock}</td>
-                <td>{transaction.category}</td>
-                
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-
-
-      
-      <div>
-        <h2>Product List</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Category</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <td>{product.name}</td>
-                <td>{product.price}</td>
-                <td>{product.stock}</td>
-                <td>{product.category}</td>
-                <td>
-                  <button onClick={() => startEditingProduct(product.id)}>
-                    Edit
-                  </button>
-                  <button onClick={() => deleteProduct(product.id)}>
-                    Delete
-                  </button>
-                  <button onClick={() => addToCart(product)}>
-                    Add to Cart
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Cart */}
-        <div>
-          <h2>Transaction Management</h2>
-          <ul>
-            {cart.map((item, index) => (
-              <li key={index}>{item.name}</li>
-            ))}
-          </ul>
-          <p>Total Amount: ₱{totalAmount.toFixed(2)}</p>
-          <button onClick={calculateTotalAmount}>Calculate Total</button>
-          <button onClick={completeTransaction}>Complete Transaction</button>
-        </div>
-      </div>
-       
       {/* Render categories with delete and update buttons */}
       <div>
         <h2>Categories</h2>
@@ -296,7 +182,60 @@ const ProductManagement = () => {
         </ul>
       </div>
 
+      {editingProduct && (
+        <Product
+          product={products.find((product) => product.id === editingProduct)}
+          categories={categories}
+          onSubmit={(updatedProduct) =>
+            updateProduct(editingProduct, updatedProduct)
+          }
+        />
+      )}
+
+
+
+
+      
+<div>
+        <h2>Product List</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Category</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id}>
+                <td>{product.id}</td>
+                <td>{product.name}</td>
+                <td>{product.price}</td>
+                <td>{product.stock}</td>
+                <td>{product.category}</td>
+                <td>
+                  <button onClick={() => startEditingProduct(product.id)}>
+                    Edit
+                  </button>
+                  <button onClick={() => deleteProduct(product.id)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+       
+      
+
     </div>
+
   );
 };
 

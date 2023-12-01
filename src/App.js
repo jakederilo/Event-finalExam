@@ -3,12 +3,13 @@ import ProductManagement from './ProductManagement';
 
 
 const App = () => {
- return (
-    <div>
-      <h1>Product Management App</h1>
-      <ProductManagement />
-    </div>
- );
+  return (
+    
+          <>
+            <ProductManagement />
+          </>
+  
+  );
 };
 
 export default App;
